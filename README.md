@@ -1,6 +1,13 @@
 # Serverless Chatbot AWS
 
+[![Python CI](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_python.yaml/badge.svg)](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_python.yaml)
+[![Terraform CI](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_terraform.yaml/badge.svg)](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_terraform.yaml)
+
+> Leia em [português](README.pt-br.md).
+
 A production-ready serverless chatbot application built on AWS infrastructure, leveraging modern cloud-native technologies for scalable conversational AI experiences.
+
+An in-depth write-up of the productization of this project — including an undefined-function bug in the Lambda handler and an API key that was being logged in plaintext — is available in [ARTIGO.md](ARTIGO.md) (pt-br) / [ARTIGO.en-us.md](ARTIGO.en-us.md) (en-us).
 
 ![Architecture Diagram](images/serverless-chatbot-aws.jpg)
 
@@ -190,6 +197,26 @@ The `scripts/` directory contains Node.js utilities for API testing:
 1. Configure environment variables from Terraform outputs
 2. Install dependencies: `npm install` in scripts directory
 3. Run test scripts with appropriate environment variables
+
+### Testing the Lambda orchestrator
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r infra/lambdas/orchestrator/requirements.txt -r config/requirements-dev.txt
+.venv/bin/pytest --cov=app --cov-report=term-missing   # runs against tests/, mocks AppSync + Bedrock
+.venv/bin/ruff check .
+.venv/bin/mypy
+```
+
+### Checking the Terraform config
+
+```bash
+terraform -chdir=infra/terraform fmt -check -recursive
+terraform -chdir=infra/terraform init -backend=false   # no AWS credentials needed
+terraform -chdir=infra/terraform validate
+```
+
+CI runs both of the above on every push/PR: ruff + pytest (coverage gate) + mypy + pip-audit for the Lambda, and `terraform fmt`/`validate` + `tfsec` for the infrastructure. The Lambda's Docker image is built and scanned with Trivy, but never pushed anywhere automatically - deploying (`docker-upload.sh`, `terraform apply`) stays a manual, human-triggered action against real AWS infrastructure. Dependabot covers pip, the Lambda's Docker base image, npm (`scripts/`), Terraform providers/modules, and GitHub Actions.
 
 ## Security
 
