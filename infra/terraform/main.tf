@@ -1,19 +1,19 @@
 terraform {
   required_version = ">= 1.5.0"
   required_providers {
-    aws = { 
+    aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0" 
+      version = ">= 5.0"
     }
-    archive = { 
+    archive = {
       source  = "hashicorp/archive"
-      version = ">= 2.4.0" 
+      version = ">= 2.4.0"
     }
   }
 }
 
-provider "aws" { 
-  region = var.region 
+provider "aws" {
+  region = var.region
 }
 
 module "dynamodb" {
@@ -22,20 +22,20 @@ module "dynamodb" {
 }
 
 module "cognito" {
-  source       = "./modules/cognito"
-  project_name = var.project_name
-  region       = var.region
+  source        = "./modules/cognito"
+  project_name  = var.project_name
+  region        = var.region
   callback_urls = var.callback_urls
   logout_urls   = var.logout_urls
 }
 
 module "ecr" {
-  source       = "./modules/ecr"
-  project_name = var.project_name
-  region = var.region
+  source        = "./modules/ecr"
+  project_name  = var.project_name
+  region        = var.region
   docker_script = "${path.root}/../lambdas/orchestrator/docker-upload.sh"
 
-  }
+}
 
 module "iam" {
   source             = "./modules/iam"
@@ -57,7 +57,7 @@ module "lambda" {
   appsync_api_key    = module.appsync.api_key
   bedrock_model      = var.bedrock_model
   bedrock_region     = var.bedrock_region
-  depends_on         = [ module.ecr ]
+  depends_on         = [module.ecr]
 }
 
 module "cloudwatch" {

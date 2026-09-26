@@ -12,7 +12,7 @@ output "messages_table_name" {
 
 output "users_table_arn" {
   value = aws_dynamodb_table.users.arn
-  
+
 }
 
 output "chats_table_arn" {

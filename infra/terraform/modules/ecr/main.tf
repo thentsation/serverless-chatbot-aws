@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "orchestrator" {
-  name = "${var.project_name}-orchestrator"
+  name         = "${var.project_name}-orchestrator"
   force_delete = true
 }
 
