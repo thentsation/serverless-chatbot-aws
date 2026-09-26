@@ -1,7 +1,10 @@
-.terraform*
+.terraform/
 *tfstate*
-*venv
-*pycache*
+.venv
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
 node_modules
 package-lock.json
 .env*
