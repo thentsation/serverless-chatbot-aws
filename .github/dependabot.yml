@@ -36,6 +36,10 @@ updates:
     labels:
       - dependencies
       - javascript
+    ignore:
+      # node-fetch 3 is ESM-only; the scripts load it with require().
+      - dependency-name: "node-fetch"
+        versions: [">=3"]
 
   - package-ecosystem: terraform
     directory: /infra/terraform
