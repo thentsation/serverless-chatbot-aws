@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.0.3 (2026-09-28)
+
+### Bug Fixes
+
+- Use RELEASE_PAT so dependabot auto-merge can write to PRs
+  ([`fc8f723`](https://github.com/thentsation/serverless-chatbot-aws/commit/fc8f723421e2405d575f8309e9252e20b4b45701))
+
+
 ## v1.0.2 (2026-09-26)
 
 ### Bug Fixes
