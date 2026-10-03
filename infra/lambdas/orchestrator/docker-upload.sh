@@ -11,14 +11,14 @@ REPO_URL="$1"
 IMAGE_NAME="$2"
 REGION="$3"
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../../.."
 
 # Diretório temporário para evitar erro de credenciais
 DOCKER_CONFIG_DIR="/tmp/docker-config"
 mkdir -p "$DOCKER_CONFIG_DIR"
 
 echo "Construindo a imagem Docker..."
-docker build -t "$IMAGE_NAME:latest" .
+docker build --target runtime -f docker/Dockerfile -t "$IMAGE_NAME:latest" .
 
 echo "Marcando a imagem com o repositório ECR..."
 docker tag "$IMAGE_NAME:latest" "$REPO_URL:latest"

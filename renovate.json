@@ -1,0 +1,7 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["local>thentsation/devops-platform//renovate/default"],
+  "pip_requirements": {
+    "managerFilePatterns": ["/(^|/)infra/lambdas/[^/]+/requirements\\.txt$/"]
+  }
+}

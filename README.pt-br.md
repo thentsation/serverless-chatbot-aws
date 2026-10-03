@@ -1,8 +1,5 @@
 # Serverless Chatbot AWS
 
-[![Python CI](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_python.yaml/badge.svg)](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_python.yaml)
-[![Terraform CI](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_terraform.yaml/badge.svg)](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_terraform.yaml)
-
 > Read in [English](README.md).
 
 Um chatbot serverless pronto para produção, construído sobre infraestrutura AWS, usando tecnologias cloud-native modernas para experiências de IA conversacional escaláveis.
@@ -89,7 +86,6 @@ Este projeto implementa uma solução de chatbot totalmente serverless usando se
 │   ├── lambdas/                   # Código-fonte das funções Lambda
 │   │   └── orchestrator/          # Função principal de orquestração do chat
 │   │       ├── app.py             # Handler Python
-│   │       ├── Dockerfile         # Configuração do container
 │   │       └── requirements.txt   # Dependências Python
 │   └── graphql/                   # Definição do schema GraphQL
 │       └── schema.graphql         # Schema da API
@@ -216,7 +212,13 @@ terraform -chdir=infra/terraform init -backend=false   # sem precisar de credenc
 terraform -chdir=infra/terraform validate
 ```
 
-O CI roda os dois comandos acima em todo push/PR: ruff + pytest (com piso de cobertura) + mypy + pip-audit para a Lambda, e `terraform fmt`/`validate` + `tfsec` para a infraestrutura. A imagem Docker da Lambda é construída e escaneada com Trivy, mas nunca publicada automaticamente em lugar nenhum — o deploy de verdade (`docker-upload.sh`, `terraform apply`) continua sendo uma ação manual, disparada por um humano, contra infraestrutura AWS real. O Dependabot cobre pip, a imagem base Docker da Lambda, npm (`scripts/`), providers/módulos do Terraform, e GitHub Actions.
+## CI/CD
+
+CI e deploy rodam no Jenkins da plataforma (`Jenkinsfile` → `appPipeline` da Shared Library `platform`, repo devops-platform), disparados por webhooks. Sem GitHub Actions.
+
+- **PRs e branches** — validação do contrato; `docker build --target test` (`ruff check`, `ruff format --check`, `mypy`, `pytest` com cobertura ≥90% em Python 3.11 e 3.12 para a Lambda, mais `terraform fmt -check`, `init -backend=false` e `validate` em `infra/terraform`, versões das ferramentas no `config/requirements-dev.txt`); `pip-audit` no `infra/lambdas/orchestrator/requirements.txt`; Trivy (CRITICAL/HIGH) na imagem de runtime.
+- **main** — tudo acima e depois build e smoke test da imagem da Lambda, release com o python-semantic-release (versão, CHANGELOG, tag e release no GitHub) e rebuild do portfolio. Também é reconstruída toda segunda para pegar patches de segurança. Nada é enviado para a AWS: o deploy (`terraform apply`, que chama o `docker-upload.sh` para construir `docker/Dockerfile --target runtime` e enviar ao ECR) continua sendo uma ação manual, disparada por um humano, contra infraestrutura AWS real.
+- **Dependências** — Renovate (job `platform/renovate` no Jenkins, `renovate.json` → preset do devops-platform): atualizações diárias, manutenção semanal do lockfile, issue "Dependency Dashboard" e auto-merge de patch/minor depois que o Jenkins aprova.
 
 ## Segurança
 
