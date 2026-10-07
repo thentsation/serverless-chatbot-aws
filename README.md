@@ -1,5 +1,8 @@
 # Serverless Chatbot AWS
 
+[![Python CI](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_python.yaml/badge.svg)](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_python.yaml)
+[![Terraform CI](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_terraform.yaml/badge.svg)](https://github.com/thentsation/serverless-chatbot-aws/actions/workflows/pipeline_terraform.yaml)
+
 > Leia em [português](README.pt-br.md).
 
 A production-ready serverless chatbot application built on AWS infrastructure, leveraging modern cloud-native technologies for scalable conversational AI experiences.
@@ -86,6 +89,7 @@ This project implements a fully serverless chatbot solution using AWS services, 
 │   ├── lambdas/                   # Lambda function source code
 │   │   └── orchestrator/          # Main chat orchestration function
 │   │       ├── app.py             # Python handler
+│   │       ├── Dockerfile         # Container configuration
 │   │       └── requirements.txt   # Python dependencies
 │   └── graphql/                   # GraphQL schema definition
 │       └── schema.graphql         # API schema
@@ -212,13 +216,7 @@ terraform -chdir=infra/terraform init -backend=false   # no AWS credentials need
 terraform -chdir=infra/terraform validate
 ```
 
-## CI/CD
-
-CI and deploy run on the platform's Jenkins (`Jenkinsfile` → `appPipeline` from the `platform` Shared Library, repo devops-platform), triggered by webhooks; there are no GitHub Actions.
-
-- **PRs and branches** — contract validation; `docker build --target test` (`ruff check`, `ruff format --check`, `mypy`, `pytest` with ≥90% coverage on Python 3.11 and 3.12 for the Lambda, plus `terraform fmt -check`, `init -backend=false` and `validate` for `infra/terraform`, tool versions from `config/requirements-dev.txt`); `pip-audit` on `infra/lambdas/orchestrator/requirements.txt`; Trivy (CRITICAL/HIGH) on the runtime image.
-- **main** — all of the above, then build and smoke test of the Lambda image, release with python-semantic-release (version, CHANGELOG, tag and GitHub release) and a rebuild of the portfolio. Also rebuilt every Monday to pick up security patches. Nothing is pushed to AWS: deploying (`terraform apply`, which calls `docker-upload.sh` to build `docker/Dockerfile --target runtime` and push it to ECR) stays a manual, human-triggered action against real AWS infrastructure.
-- **Dependencies** — Renovate (Jenkins job `platform/renovate`, `renovate.json` → devops-platform preset): daily updates, weekly lockfile maintenance, Dependency Dashboard issue and auto-merge of patch/minor after Jenkins passes.
+CI runs both of the above on every push/PR: ruff + pytest (coverage gate) + mypy + pip-audit for the Lambda, and `terraform fmt`/`validate` + `tfsec` for the infrastructure. The Lambda's Docker image is built and scanned with Trivy, but never pushed anywhere automatically - deploying (`docker-upload.sh`, `terraform apply`) stays a manual, human-triggered action against real AWS infrastructure. Dependabot covers pip, the Lambda's Docker base image, npm (`scripts/`), Terraform providers/modules, and GitHub Actions.
 
 ## Security
 
