@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.14
+FROM public.ecr.aws/lambda/python:3.15
 
 # Patch OS CVEs from the base image and drop the local-only Runtime Interface
 # Emulator (a Go binary with unfixed stdlib CVEs; not used inside AWS Lambda).
